@@ -17,10 +17,19 @@ export class Question {
     }
 
     static fetch(token) {
-      return fetch('https://podcast-app-ddb98-default-rtdb.europe-west1.firebasedatabase.app/questions.json')
+        if(!token) {
+            return Promise.resolve('<p class="error">У Вас нет токена</p>')
+        }
+      return fetch(`https://podcast-app-ddb98-default-rtdb.europe-west1.firebasedatabase.app/questions.json?auth=${token}`)
         .then(response => response.json())
-        .then(questions => {
-            console.log('Questions', questions)
+        .then(response => {
+            if(response && response.error) {
+                return `<p class="error">${questions.error}</p>`
+            }
+            return response ? Object.keys(response).map(key => ({
+                ...response[key],
+                id: key
+            })) : []
         })
     }
 
@@ -33,6 +42,12 @@ export class Question {
 
         const list = document.getElementById('list')
             list.innerHTML = html;
+    }
+
+    static listToHTML(questions) {
+        return questions.length
+        ? `<ol>${questions.map(q => `<li>${q.text}</li>`).join('')}</ol>`
+        : '<p>Ворпросов пока нет</p>'
     }
 }
 
